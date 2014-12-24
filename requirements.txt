@@ -1,0 +1,8 @@
+gevent==1.0.1
+django==1.7
+pika==0.9.14
+pyhamcrest==1.8.1
+pysqlite==2.6.3
+requests==2.5.1
+flexmock==0.9.7
+dogstatsd-python==0.5.2

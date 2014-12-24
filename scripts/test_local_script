@@ -1,0 +1,5 @@
+import time
+
+print "HELLO!!"
+result = "success"
+time.sleep(5)

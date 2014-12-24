@@ -1,0 +1,10 @@
+{
+  "folder": {
+    "tmp": "/tmp",
+    "files": ["1.txt", "2.txt"],
+    "subdirs": {
+      "dir1": "/o_o"
+    }
+  },
+  "simply": "one"
+}

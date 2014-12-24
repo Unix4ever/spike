@@ -1,0 +1,11 @@
+{
+  "folder": {
+    "tmp": "/tmp2",
+    "files": ["2.txt", "4.txt"],
+    "subdirs": {
+      "dir2": "<_<"
+    }
+  },
+  "simply": "two",
+  "new_one": "three"
+}
