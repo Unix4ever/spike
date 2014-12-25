@@ -69,10 +69,11 @@ class SpikeWorker(object):
         Get executor for scenario
         @param task: task to process
         """
-        if task.scenario_type not in self.executors:
-            self.executors[task.scenario_type] = self.executor_factory.create(task)
+        id = (task.scenario_type, task.scenario_id)
+        if id not in self.executors:
+            self.executors[id] = self.executor_factory.create(task)
 
-        return self.executors[task.scenario_type]
+        return self.executors[id]
 
     def clean_cache(self):
         """

@@ -55,6 +55,9 @@ class Executor(object):
             self.stats_connected = True
         key = "spike.test"
         tags = ["%s:%s" % (k, v) for k, v in kwargs.iteritems()]
+        if "postfix" in kwargs:
+            key = ".".join([key, kwargs["postfix"]])
+            del kwargs["postfix"]
 
         if metric_type == "counter":
             statsd.increment(key, value, tags=tags)

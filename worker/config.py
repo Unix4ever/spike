@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 def get(key, default_value=None):
     path = key.split(".")
-    value = config
+    value = config.copy()
     for i in path:
         if i not in value:
             value = None

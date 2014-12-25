@@ -6,14 +6,18 @@ import pika
 import threading
 import argparse
 
+from pika import credentials as pika_credentials
+
+from logging import handlers
+
 from Queue import Queue
 
-os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..'))
-sys.path.append("./")
+path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.abspath(os.path.join(path, '..')))
 
-import config
-
+from worker import config
 from worker.spike_worker import SpikeWorker
+from worker.spike_worker import ProcessingError
 from worker.executors.factory import ExecutorFactory
 
 class Spike(object):
@@ -21,6 +25,8 @@ class Spike(object):
     def __init__(self):
         self.workers_count = config.getint("main.workers_count", 1)
         self.amqp_address = config.get("main.amqp_server")
+        self.amqp_user = config.get("main.amqp_user", "guest")
+        self.amqp_pass = config.get("main.amqp_pass", "guest")
 
         self.input_queue = config.get("main.input_queue", "spikeTasks")
         self.output_queue = config.get("main.output_queue")
@@ -33,10 +39,12 @@ class Spike(object):
         if not self.amqp_address:
             raise Exception("Failed to run Spike, amqp host not set")
 
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=str(self.amqp_address)))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=str(self.amqp_address),
+            socket_timeout=10,
+            credentials=pika_credentials.PlainCredentials(self.amqp_user, self.amqp_pass)))
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=self.input_queue)
-        self.channel.basic_qos(prefetch_count=self.workers_count)
+        self.channel.basic_qos(prefetch_count=self.workers_count * 5)
 
         local_queue = Queue()
 
@@ -45,7 +53,8 @@ class Spike(object):
 
         stop_event = threading.Event()
 
-        def process(queue):
+        def process(queue, cfg):
+            config.config = cfg
             while not stop_event.is_set():
                 task = queue.get()
                 if not task:
@@ -60,7 +69,8 @@ class Spike(object):
                 logging.info("Finished processing message %r" % task)
 
         for i in xrange(self.workers_count):
-            t = threading.Thread(target=process, args=(local_queue,))
+            t = threading.Thread(target=process, args=(local_queue,
+                config.config))
             t.daemon = True
             self.threads.append(t)
             t.start()
@@ -96,16 +106,38 @@ class Spike(object):
         self.connection.close()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Replicate data from one dc to another")
-    parser.add_argument("-config", "--config", dest="config", help="Configuration file")
+    parser = argparse.ArgumentParser(description="Spike load test utility")
+    parser.add_argument("-c", "--config", dest="config", help="Configuration file")
+    parser.add_argument("-l", "--logfile", dest="log_file", help="Log file")
+    parser.add_argument("-p", "--pidfile", dest="pid_file", help="Pid file", default="spike.pid")
     options = parser.parse_args()
-
-    logging.basicConfig(level=logging.INFO)
+    pid = str(os.getpid())
+    if os.path.isfile(options.pid_file):
+        logging.error("%s already exists, exiting" % options.pid_file)
+        sys.exit()
+    else:
+        file(options.pid_file, 'w').write(pid)
+    
     files = []
     if options.config:
         files.append(options.config)
+
+    if options.log_file:
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter('[%(asctime)s][%(name)s][%(levelname)s][%(process)d] %(message)s')
+        log_file = handlers.RotatingFileHandler(options.log_file)
+        log_file.setLevel(logging.INFO)
+        log_file.setFormatter(formatter)
+        root.addHandler(log_file)
+    else:
+        logging.basicConfig(level=logging.INFO)
                 
     config.read_config(*files)
 
-    spike = Spike()
-    spike.run()
+    try:
+        spike = Spike()
+        spike.run()
+    finally:
+        os.unlink(options.pid_file)

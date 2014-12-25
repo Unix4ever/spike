@@ -11,7 +11,7 @@ class PythonExecutor(executor.Executor):
         """
         Run python script file
         """
-        variables = {} # TODO: get params from task
+        variables = {"runner": self, "stat": lambda *args, **kwargs: self.report(*args, scenario=task.scenario_id, **kwargs)}
         local_vars = {"runner": self, "output": {}}
         try:
             execfile(self.script_file, variables, local_vars)

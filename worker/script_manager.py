@@ -5,7 +5,6 @@ import urlparse
 import logging
 import shutil
 import time
-import threading
 
 from worker import config
 
@@ -14,8 +13,6 @@ log = logging.getLogger(__name__)
 
 class ScriptFileDB(object):
     def __init__(self):
-        self.query_lock = threading.Lock()
-
         self.db_file = config.get("script.db_file", "scriptsdb.sqlite3")
         self.connection = sqlite3.connect(self.db_file)
         self.initialize()
@@ -52,12 +49,10 @@ class ScriptFileDB(object):
         return self.execute(" ".join(["SELECT * FROM scripts", where_clause]), *values)
 
     def execute(self, query, *args):
-        self.query_lock.acquire()
         c = self.connection.cursor()
         c.execute(query, args)
         results = c.fetchall()
         self.connection.commit()
-        self.query_lock.release()
         return results
 
 

@@ -1,0 +1,9 @@
+{
+  "main":
+  {
+    "amqp_server": "amqp.example",
+    "workers_count": 4,
+    "amqp_user": "guest",
+    "amqp_pass": "guest"
+  }
+}
