@@ -23,6 +23,7 @@ if __name__ == "__main__":
     amqp_server = opts.amqp_server if opts.amqp_server else config.get("main.amqp_server")
     amqp_user = config.get("main.amqp_user", "guest")
     amqp_pass = config.get("main.amqp_pass", "guest")
+    queue = config.get("main.input_queue", "spikeTasks")
     if not amqp_server:
         print "FATAL: amqp server is not defined"
         exit(1)
@@ -37,4 +38,4 @@ if __name__ == "__main__":
     print "Going to publish %s tasks to launch %s scenario" % (opts.count, opts.scenario)
     for i in xrange(int(opts.count)):
         msg = {"scenario": {"id": opts.scenario, "type": "python"}, "id": uuid.uuid4().hex}
-        channel.basic_publish(exchange='', routing_key="spikeTasks", body=json.dumps(msg))
+        channel.basic_publish(exchange='', routing_key=queue, body=json.dumps(msg))

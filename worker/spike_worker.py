@@ -15,11 +15,13 @@ class SpikeTask(object):
             return
 
         self.id = message["id"]
+        self.source_host = message.get("host")
 
         scenario = message["scenario"]
-        self.scenario_id = scenario.get("id", None)
-        self.scenario_type = scenario.get("type", None)
-        
+        self.scenario_id = scenario.get("id")
+        self.scenario_type = scenario.get("type")
+        self.scenario_file = scenario.get("scenario_file")
+
         self.valid = self.scenario_id is not None and self.scenario_type is not None
 
     def validate(self, message):

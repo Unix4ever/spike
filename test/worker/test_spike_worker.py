@@ -27,7 +27,11 @@ class TestSpikeWorker(unittest.TestCase):
         self.instance = SpikeWorker(ExecutorFactory())
 
     def tearDown(self):
-        self.instance.clean_cache()        
+        self.instance.clean_cache()
+
+    def process_task(self, message):
+        task = self.instance.create_task(message)
+        return self.instance.process(task)
 
     def test_non_existing_script(self):
         """
@@ -39,12 +43,13 @@ class TestSpikeWorker(unittest.TestCase):
                 "scenario": 
                 {
                     "id": "not_existing",
-                    "type": "python"
+                    "type": "python",
+                    "file_name": "/file/123"
                 },
                 "id": 1
         }
         try:
-            self.instance.process(message)
+            self.process_task(message)
         except ExecutorPrepareError:
             pass
         else:
@@ -59,11 +64,12 @@ class TestSpikeWorker(unittest.TestCase):
                 "scenario": 
                 {
                     "id": "test_local_script",
-                    "type": "python"
+                    "type": "python",
+                    "file_name": "/file/123"
                 },
                 "id": 1
         }
-        res = self.instance.process(message)
+        res = self.process_task(message)
         assert_that(res, not_none())
         assert_that(res.get("result"), equal_to("success"))
 

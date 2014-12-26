@@ -15,6 +15,7 @@ from Queue import Queue
 path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.abspath(os.path.join(path, '..')))
 
+from worker.executors import ExecutorPrepareError
 from worker import config
 from worker.spike_worker import SpikeWorker
 from worker.spike_worker import ProcessingError
@@ -88,6 +89,11 @@ class Spike(object):
                 local_queue.put((self.worker.create_task(message), lambda: channel.basic_ack(delivery_tag=method_frame.delivery_tag)))
             except ProcessingError:
                 logging.exception("Failed to process amqp message %r", message)
+            except ExecutorPrepareError:
+                logging.exception("Failed to process task %r", message)
+            except Exception:
+                logging.exception("Unhandler error")
+                raise
 
         self.channel.basic_consume(on_message, self.input_queue)
         try:

@@ -74,24 +74,30 @@ class ScriptManager(object):
             if os.path.exists(f):
                 shutil.rmtree(f) if os.path.isdir(f) else os.remove(f) 
 
-    def get(self, script_id): 
-        path = self.file_db.get_script_file(script_id)
-        if not path:
-            path = os.path.join(self.scripts_folder, script_id)
+    def get(self, task): 
+        path = self.file_db.get_script_file(task.scenario_id)
+        if not path or not os.path.exists(path):
+            path = os.path.join(self.scripts_folder, task.scenario_id)
             if not os.path.exists(path):
-                if not self.download_script(script_id, path):
+                if not self.download_script(task, path):
+                    if os.path.exists(path):
+                        os.unlink(path)
                     return None
 
         return path
 
-    def download_script(self, script_id, path):
+    def download_script(self, task, path):
         if os.path.exists(path):
-            self.file_db.add_script_file(script_id, path)
+            self.file_db.add_script_file(task.script_id, path)
             return True
 
-        if not self.master_host:
+        host = task.source_host or self.master_host
+        if not host:
             return False
 
+        url = urlparse.urljoin("http://%s" % host, task.scenario_file)
+        log.info("Going to download script in cache from %s", url)
+        
         directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -113,7 +119,7 @@ class ScriptManager(object):
 
                 handle.write(block)
 
-            self.file_db.add_script_file(script_id, path, cache=True,
+            self.file_db.add_script_file(task.scenario_id, path, cache=True,
                     ttd=time.time() + self.script_ttl * 60)
             return True
 

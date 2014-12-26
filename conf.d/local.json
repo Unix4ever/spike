@@ -1,0 +1,7 @@
+{
+  "main":
+  {
+    "amqp_server": "localhost",
+    "workers_count": 32
+  }
+}
