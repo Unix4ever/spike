@@ -29,4 +29,10 @@ Example:
 ```
     python tools/manual_start.py -s flow.py -c 100
 ```
+
+```
+    python tools/manual_start.py -amqp localhost -amqp-pass pwd123 -c 100 -s flow.py
+```
+
 Available scripts are under scripts folder.
+
