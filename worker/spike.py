@@ -116,14 +116,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Spike load test utility")
     parser.add_argument("-c", "--config", dest="config", help="Configuration file")
     parser.add_argument("-l", "--logfile", dest="log_file", help="Log file")
-    parser.add_argument("-p", "--pidfile", dest="pid_file", help="Pid file", default="spike.pid")
+    parser.add_argument("-p", "--pidfile", dest="pid_file", help="Pid file")
     options = parser.parse_args()
     pid = str(os.getpid())
-    if os.path.isfile(options.pid_file):
-        logging.error("%s already exists, exiting" % options.pid_file)
-        sys.exit()
-    else:
-        file(options.pid_file, 'w').write(pid)
+
+    if options.pid_file:
+        if os.path.isfile(options.pid_file):
+            logging.error("%s already exists, exiting" % options.pid_file)
+            sys.exit()
+        else:
+            file(options.pid_file, 'w').write(pid)
     
     files = []
     if options.config:
@@ -147,4 +149,5 @@ if __name__ == "__main__":
         spike = Spike()
         spike.run()
     finally:
-        os.unlink(options.pid_file)
+        if os.path.isfile(options.pid_file):
+            os.unlink(options.pid_file)
