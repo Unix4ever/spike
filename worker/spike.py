@@ -149,5 +149,5 @@ if __name__ == "__main__":
         spike = Spike()
         spike.run()
     finally:
-        if os.path.isfile(options.pid_file):
+        if options.pid_file and os.path.isfile(options.pid_file):
             os.unlink(options.pid_file)
