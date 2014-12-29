@@ -8,7 +8,7 @@ except:
     statsd_installed = False
 
 from worker import executors
-from worker import config
+from config import config
 
 log = logging.getLogger(__name__)
 
