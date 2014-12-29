@@ -16,6 +16,7 @@ if __name__ == "__main__":
     parser.add_argument("-amqp", "--amqp-server", dest="amqp_server", help="AMQP server address to publish to")
     parser.add_argument("-s", "--scenario", dest="scenario", help="Scenario to run")
     parser.add_argument("-c", "--count", dest="count", help="Task count", default=1)
+    parser.add_argument("-d", "--drain", dest="drain", action="store_true", help="Drain all previous messages")
     config.read_config()
 
     opts = parser.parse_args()
@@ -28,13 +29,25 @@ if __name__ == "__main__":
         print "FATAL: amqp server is not defined"
         exit(1)
 
-    if not opts.scenario:
-        print "FATAL: scenario is not defined"
-        exit(2)
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=str(amqp_server),
             credentials=pika_credentials.PlainCredentials(amqp_user, amqp_pass)))
     channel = connection.channel()
+    count = 0
+    if opts.drain:
+        print "Draining all messages from queue"
+        message = True
+        while message:
+            method, _, message = channel.basic_get(queue)
+            channel.basic_ack(method.delivery_tag)
+            count += 1
+            sys.stdout.write("Got %s messages\r" % count)
+            sys.stdout.flush()
+
+    if not opts.scenario:
+        print "FATAL: scenario is not defined"
+        exit(2)
+
     print "Going to publish %s tasks to launch %s scenario" % (opts.count, opts.scenario)
     for i in xrange(int(opts.count)):
         msg = {"scenario": {"id": opts.scenario, "type": "python"}, "id": uuid.uuid4().hex}

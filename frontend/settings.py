@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'werv(to=c(mfpaipk6s-wf$jdvhyw5o46^^7=#0%k3yvm_be9m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True 
+DEBUG = True
 
 TEMPLATE_DEBUG = True
 
@@ -134,3 +134,19 @@ LOGGING = {
 
 djcelery.setup_loader()
 CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
+
+def json_patch(path):
+    try:
+        d = json.load(open(path))
+    except IOError:
+        logging.exception("Unable to open json settings in %r" % (path,))
+        raise SystemExit(-1)
+    except ValueError:
+        logging.exception("Unable to parse json settings in %r" % (path,))
+        raise SystemExit(-1)
+    for k,v in d.items():
+        globals()[k] = v
+
+JSON_CONFIG = os.environ.get("JSON_CONFIG")
+if JSON_CONFIG:
+    json_patch(JSON_CONFIG)

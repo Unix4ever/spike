@@ -2,7 +2,7 @@ import unittest
 import json
 
 from hamcrest import *
-from worker import config
+from common import config
 
 class TestConfig(unittest.TestCase):
 

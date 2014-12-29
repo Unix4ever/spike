@@ -7,3 +7,4 @@ flexmock==0.9.7
 dogstatsd-python==0.5.2
 djangorestframework==3.0.2
 django-celery==3.1.16
+supervisor==3.1.3

@@ -15,8 +15,9 @@ from Queue import Queue
 path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.abspath(os.path.join(path, '..')))
 
+from common import config
+
 from worker.executors import ExecutorPrepareError
-from worker import config
 from worker.spike_worker import SpikeWorker
 from worker.spike_worker import ProcessingError
 from worker.executors.factory import ExecutorFactory

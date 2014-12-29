@@ -6,7 +6,7 @@ import logging
 import shutil
 import time
 
-from worker import config
+from common import config
 
 log = logging.getLogger(__name__)
 
