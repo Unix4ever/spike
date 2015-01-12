@@ -14,6 +14,8 @@ paths = (
         ('scenarios/(?P<pk>\w+)/?$',
             views.ScenarioView.as_view(), 'scenario-detail'),
 
+        ('scenarios/(?P<pk>\w+)/content/?$', 'get_file', 'scenario-file'),
+
         ('tasks/$', views.TaskList.as_view(), 'tasks-detail'),
         ('tasks/(?P<pk>[\d\w._-]+)/?$', views.TaskView.as_view(),
             'task-detail'),
@@ -26,4 +28,4 @@ urlpatterns = patterns('frontend.views', *paths)
 urlpatterns += patterns('',
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^admin/', include(admin.site.urls))
-) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+)

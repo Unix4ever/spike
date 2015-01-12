@@ -126,7 +126,7 @@ if __name__ == "__main__":
             sys.exit()
         else:
             file(options.pid_file, 'w').write(pid)
-    
+
     files = []
     if options.config:
         files.append(options.config)
@@ -142,7 +142,7 @@ if __name__ == "__main__":
         root.addHandler(log_file)
     else:
         logging.basicConfig(level=logging.INFO)
-                
+
     config.read_config(*files)
 
     try:

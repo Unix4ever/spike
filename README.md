@@ -1,7 +1,6 @@
 Spike - distributed load testing utility
 ================
 
-#### Manual task schelduling:
 
 ##### Install python-dev package.
 

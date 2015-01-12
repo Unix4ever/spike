@@ -7,6 +7,7 @@ import shutil
 import time
 
 from common import config
+from requests.auth import HTTPBasicAuth
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +66,9 @@ class ScriptManager(object):
         self.scripts_folder = config.get("script.folder", "scripts")
         self.master_host = config.get("script.master_host")
 
+        self.api_user = config.get("script.api_user")
+        self.api_password = config.get("script.api_password")
+
         self.file_db = ScriptFileDB()
 
     def clean(self):
@@ -88,23 +92,26 @@ class ScriptManager(object):
 
     def download_script(self, task, path):
         if os.path.exists(path):
-            self.file_db.add_script_file(task.script_id, path)
+            self.file_db.add_script_file(task.scenario_id, path)
             return True
 
         host = task.source_host or self.master_host
         if not host:
             return False
 
-        url = urlparse.urljoin("http://%s" % host, task.scenario_file)
+        url = "http://%s/v1/scenarios/%s/content" % (host, task.scenario_id)
         log.info("Going to download script in cache from %s", url)
-        
+
         directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
         with open(path, 'wb') as handle:
             try:
-                response = requests.get(url, stream=True)
+                kwargs = dict(stream=True, params={"format": "txt"})
+                if self.api_user and self.api_password:
+                    kwargs["auth"] = HTTPBasicAuth(self.api_user, self.api_password)
+                response = requests.get(url, **kwargs)
             except:
                 log.exception("Failed to request script from master host")
                 return False

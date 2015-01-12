@@ -27,7 +27,7 @@ class ExecutorFactory(object):
 
         executor.prepare(script_file)
         return executor
-    
+
     def get_script_file(self, task):
         return self.script_manager.get(task)
 

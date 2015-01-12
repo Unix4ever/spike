@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import urllib
-import djcelery
+import json
+import logging
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -40,7 +41,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'djcelery',
     'frontend',
     'frontend.models'
 )
@@ -55,20 +55,13 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': []
+}
+
 ROOT_URLCONF = 'frontend.urls'
 
 WSGI_APPLICATION = 'frontend.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -83,6 +76,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+MEDIA_ROOT = BASE_DIR
 MEDIA_URL = '/'
 
 # Static files (CSS, JavaScript, Images)
@@ -132,8 +126,8 @@ LOGGING = {
     }
 }
 
-djcelery.setup_loader()
-CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
+BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
 
 def json_patch(path):
     try:
@@ -147,6 +141,19 @@ def json_patch(path):
     for k,v in d.items():
         globals()[k] = v
 
+DB_DIR = BASE_DIR 
+DEFAULT_USER = None
+
 JSON_CONFIG = os.environ.get("JSON_CONFIG")
 if JSON_CONFIG:
     json_patch(JSON_CONFIG)
+
+# Database
+# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(DB_DIR, 'db.sqlite3'),
+    }
+}

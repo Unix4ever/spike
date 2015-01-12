@@ -4,7 +4,7 @@ import json
 
 from pika import credentials as pika_credentials
 
-from djcelery import celery
+from frontend.celery import app
 from django.conf import settings
 from rest_framework import serializers
 
@@ -25,8 +25,8 @@ class QueueTaskSerializer(serializers.ModelSerializer):
         fields = ('id', 'scenario')
 
 
-@celery.task
-def add_tasks(task):
+@app.task(bind=True)
+def add_tasks(self, task):
     """
     Add load testing tasks to the queue
     """
